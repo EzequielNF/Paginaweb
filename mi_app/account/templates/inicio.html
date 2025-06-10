@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ScareCrow IoTech</title>
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+</head>
+<body>
+    <header>
+        <h1>ScareCrow IoTech</h1>
+        <a class="btn-agregar" href="{% url 'agregar_persona' %}">Agregar persona autorizada</a>
+    </header>
+
+    <main class="contenedor">
+        <div class="tarjeta">
+            <h2>Datos del individuo escaneado</h2>
+            <p><strong>Nombre:</strong> {{ persona.nombre }} {{ persona.apellido }}</p>
+            <p><strong>Número de casa:</strong> {{ persona.numero_casa }}</p>
+            <p><strong>Tipo:</strong> {{ persona.tipo }}</p>
+            <p><strong>¿Vehículo?:</strong> {{ persona.tiene_vehiculo }}</p>
+            {% if persona.tiene_vehiculo == "Sí" %}
+                <p><strong>Patente:</strong> {{ persona.patente }}</p>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>
