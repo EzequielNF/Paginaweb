@@ -11,7 +11,7 @@ class LoginForm(forms.Form):
 class PersonaForm(forms.ModelForm):
     class Meta:
         model = Persona
-        fields = ['nombre', 'apellido', 'numero_casa', 'tipo', 'vehiculo', 'patente']
+        fields = ['nombre', 'apellido', 'numero_casa', 'tipo', 'vehiculo', 'patente','foto']
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'apellido': forms.TextInput(attrs={'class': 'form-control'}),

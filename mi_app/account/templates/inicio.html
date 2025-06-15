@@ -2,27 +2,92 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>ScareCrow IoTech</title>
-    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}" />
 </head>
 <body>
     <header>
         <h1>ScareCrow IoTech</h1>
-        <a class="btn-agregar" href="{% url 'agregar_persona' %}">Agregar persona autorizada</a>
+        <div class="botones-header">
+            <a class="btn boton-primario" href="{% url 'agregar_persona' %}">Agregar persona autorizada</a>
+            <a class="btn boton-secundario" href="{% url 'descargar_excel' %}">Descargar registros</a>
+        </div>
     </header>
 
     <main class="contenedor">
         <div class="tarjeta">
             <h2>Datos del individuo escaneado</h2>
-            <p><strong>Nombre:</strong> {{ persona.nombre }} {{ persona.apellido }}</p>
-            <p><strong>Número de casa:</strong> {{ persona.numero_casa }}</p>
-            <p><strong>Tipo:</strong> {{ persona.tipo }}</p>
-            <p><strong>¿Vehículo?:</strong> {{ persona.tiene_vehiculo }}</p>
-            {% if persona.tiene_vehiculo == "Sí" %}
-                <p><strong>Patente:</strong> {{ persona.patente }}</p>
-            {% endif %}
+            <img id="foto_acceso" src="" alt="Foto" style="max-width: 150px; border-radius: 8px; margin-bottom: 15px; display: none;">
+            <p><strong>Nombre:</strong> <span id="nombre">--</span></p>
+            <p><strong>Número de casa:</strong> <span id="numero_casa">--</span></p>
+            <p><strong>Tipo:</strong> <span id="tipo">--</span></p>
+            <p><strong>¿Vehículo?:</strong> <span id="vehiculo">--</span></p>
+            <p id="patente-container" style="display:none;"><strong>Patente:</strong> <span id="patente"></span></p>
         </div>
     </main>
+
+    <script>
+        let ultimoNombre = null;
+        let ocultarTimeout = null;
+
+        function ocultarDatos() {
+            document.getElementById('nombre').textContent = '--';
+            document.getElementById('numero_casa').textContent = '--';
+            document.getElementById('tipo').textContent = '--';
+            document.getElementById('vehiculo').textContent = '--';
+            document.getElementById('patente-container').style.display = "none";
+            const fotoElem = document.getElementById('foto_acceso');
+            fotoElem.style.display = "none";
+            fotoElem.src = "";
+        }
+
+        async function cargarDatos() {
+            try {
+                const response = await fetch("{% url 'datos_ultimo_acceso' %}");
+                if (!response.ok) throw new Error('No hay datos');
+                const data = await response.json();
+
+                if (!data.nombre || data.nombre === ultimoNombre) {
+                    return;
+                }
+
+                document.getElementById('nombre').textContent = data.nombre + (data.apellido ? ' ' + data.apellido : '');
+                document.getElementById('numero_casa').textContent = data.numero_casa || '--';
+                document.getElementById('tipo').textContent = data.tipo || '--';
+                document.getElementById('vehiculo').textContent = data.vehiculo ? "Sí" : "No";
+
+                if(data.vehiculo && data.patente) {
+                    document.getElementById('patente-container').style.display = "block";
+                    document.getElementById('patente').textContent = data.patente;
+                } else {
+                    document.getElementById('patente-container').style.display = "none";
+                }
+
+                const fotoElem = document.getElementById('foto_acceso');
+                if(data.foto) {
+                    fotoElem.src = data.foto;
+                    fotoElem.style.display = "block";
+                } else {
+                    fotoElem.style.display = "none";
+                    fotoElem.src = "";
+                }
+
+                ultimoNombre = data.nombre;
+
+                if(ocultarTimeout) clearTimeout(ocultarTimeout);
+                ocultarTimeout = setTimeout(() => {
+                    ocultarDatos();
+                    ultimoNombre = null;
+                }, 5000);
+
+            } catch (e) {
+                // Silencio
+            }
+        }
+
+        ocultarDatos();
+        setInterval(cargarDatos, 5000);
+    </script>
 </body>
 </html>
